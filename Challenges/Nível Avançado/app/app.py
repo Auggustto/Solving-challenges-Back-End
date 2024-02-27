@@ -70,15 +70,18 @@ class Posting(Resource):
         return (
             request.json.get("email"),
             request.json.get("category"),
+            request.json.get("title"),
             request.json.get("post"),
+            request.json.get("image_url"),
+            request.json.get("tags"),
         )
     
 
     def post(self):
         print(self.get_posting())
-        email, category, post = self.get_posting()
+        email, category, title, post, image_url, tags = self.get_posting()
 
-        return PostingManager.create_post(email, category, post)
+        return PostingManager.create_post(email, category, title, post, image_url, tags)
 
 
 api.add_resource(CreateUser, '/api/users')

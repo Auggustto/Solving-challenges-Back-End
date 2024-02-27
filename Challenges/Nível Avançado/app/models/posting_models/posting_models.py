@@ -1,26 +1,27 @@
 from models.user_models.users_models import UserManager
-from db.database import session, Posting
+from db.database import session, Posting, Tag
 from datetime import datetime
 import logging
 
 
 class PostingManager:
 
-    def create_post(email, category, post):
+    def create_post(email, category, title, post, image_url, tags):
         try:
             user = UserManager.filter_user(email)
             if user:
-                """ Settings default """
-                now = datetime.now()
+
+                tag = Tag(name=tags)
 
                 new_post = Posting(
                     category=category,
+                    title=title,
                     post=post,
-                    date=now.date(),
-                    time=now.time(),
+                    image_url=image_url
                 )
 
                 user.posts.append(new_post)
+                new_post.tags.append(tag)
 
                 session.add(new_post)
                 session.commit()

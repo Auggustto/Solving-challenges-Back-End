@@ -67,7 +67,11 @@ class UserManager:
         """
         try:
             read_user = UserManager.filter_user(email)
-            return read_user.as_dict()
+
+            if read_user:
+                return read_user.as_dict()
+            
+            return {"error": f"User {email} not found!"}, 404
         
         except Exception as e:
             logging.error(f"Error reading user: {e}")

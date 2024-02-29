@@ -110,7 +110,7 @@ class Tag(Base):
     __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(30), nullable=False, unique=True)
+    name = Column(String(30), nullable=False)
 
     posts = relationship("Posting", secondary=post_tags_association, back_populates="tags")
 

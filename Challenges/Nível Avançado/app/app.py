@@ -3,7 +3,7 @@ from flask_restful import Resource, Api
 
 from controllers.user_controller.user_controller import UserController
 from controllers.login_controller.login_controller import LoginController
-from controllers.posting_controller.posting_controller import PostingManager
+from controllers.posting_controller.posting_controller import PostingController
 
 
 
@@ -20,8 +20,13 @@ class Login(Resource):
         return LoginController.login_user(email, password)
 
 
+class AllUser(Resource):
 
-class User(Resource):
+    def get(self):
+        return UserController.all_users()
+
+
+class UserResource(Resource):
 
     @staticmethod
     def get_metadata():
@@ -32,10 +37,16 @@ class User(Resource):
             request.json.get("email"),
             request.json.get("password")
         )
-
+    
 
     def post(self):
-        _, _, _, email, _= self.get_metadata()
+        name, lastname, birthdata, email, password = self.get_metadata()
+
+        return UserController.create_user(name=name, lastname=lastname, birthdata=birthdata, email=email, password=password)
+
+
+    def get(self, email):
+        # _, _, _, email, _= self.get_metadata()
         return UserController.read_user(email=email)
 
 
@@ -51,23 +62,12 @@ class User(Resource):
         return UserController.delete_user(email)
 
 
-class CreateUser(Resource):
+class PostingResource(Resource):
 
-    def get(self):
-        return UserController.all_users()
-
-
-    def post(self):
-        name, lastname, birthdata, email, password = User.get_metadata()
-
-        return UserController.create_user(name=name, lastname=lastname, birthdata=birthdata, email=email, password=password)
-
-
-class Posting(Resource):
-    
     @staticmethod
     def get_posting():
         return (
+            request.json.get("id"),
             request.json.get("email"),
             request.json.get("category"),
             request.json.get("title"),
@@ -76,20 +76,47 @@ class Posting(Resource):
             request.json.get("tags"),
         )
     
-
     def post(self):
-        print(self.get_posting())
-        email, category, title, post, image_url, tags = self.get_posting()
+        _, email, category, title, post, image_url, tags = self.get_posting()
+        
+        return PostingController.create_posting(email, category, title, post, image_url, tags)
 
-        return PostingManager.create_post(email, category, title, post, image_url, tags)
+
+    def get(self, id):
+        
+        return PostingController.read_posting(id)
+    
+
+    def delete(self):
+        id = request.json.get("id")
+
+        return PostingController.delete_posting(id)
+    
+
+    def put(self):
+        
+        id, _, category, title, post, image_url, tags = self.get_posting()
+
+        return PostingController.update_posting(id, category, title, post, image_url, tags)
 
 
-api.add_resource(CreateUser, '/api/users')
-api.add_resource(User, '/api/user')
+class Like(Resource):
+    def post(self, post_id):
+        email = request.json.get("email")
+        
+        return PostingController.like_posting(email, post_id)
+
+
+    def delete(self, post_id):
+        email = request.json.get("email")
+        
+        return PostingController.dislike_posting(email, post_id)
+
+
 api.add_resource(Login, '/api/login')
-api.add_resource(Posting, '/api/post')
-
-
+api.add_resource(UserResource, '/api/user', '/api/user/<string:email>')
+api.add_resource(PostingResource, '/api/post', '/api/post/<int:id>')
+api.add_resource(Like, '/api/post/<int:post_id>/like', '/api/post/<int:post_id>/dislike')
 
 
 if __name__ == "__main__":
